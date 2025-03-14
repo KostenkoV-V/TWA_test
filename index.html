@@ -9,6 +9,7 @@
     <meta name="HandheldFriendly" content="True" />
     <meta name="robots" content="noindex,nofollow" />
     <script src="https://telegram.org/js/telegram-web-app.js?2"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <title>Покупка доменов</title>
     <style>
         body {
@@ -66,6 +67,7 @@
 </head>
 
 <body class="" style="visibility: hidden;">
+    <button id="authButton">Войти через Telegram</button>
 
 <div class="main-container">
     <input type="text" id="domainInput" placeholder="Введите доменное имя (например, example.com)" />
@@ -84,36 +86,34 @@
 
     // Функция для проверки доступности домена
     async function checkDomain() {
-        const domain = document.getElementById("domainInput").value.trim();
+        const domain = $("#domainInput").val().trim();
         if (!domain) {
             alert("Пожалуйста, введите доменное имя.");
             return;
         }
 
         currentDomain = domain;
-        document.getElementById("status").textContent = "Проверка доступности...";
-        document.getElementById("price").textContent = "";
-        document.getElementById("buyDomainButton").disabled = true;
+        $("#status").text("Проверка доступности...");
+        $("#price").text("");
+        $("#buyDomainButton").prop("disabled", true);
 
         try {
-            const response = await fetch(`${API_URL}/check-domain?domain=${domain}`);
-            const data = await response.json();
-
-            if (data.available) {
+            const response = await $.get(`${API_URL}/check-domain`, { domain });
+            if (response.available) {
                 isDomainAvailable = true;
-                domainPrice = data.price;
-                document.getElementById("status").textContent = "Домен доступен!";
-                document.getElementById("price").textContent = `Цена: $${domainPrice}`;
-                document.getElementById("buyDomainButton").disabled = false;
+                domainPrice = response.price;
+                $("#status").text("Домен доступен!");
+                $("#price").text(`Цена: $${domainPrice}`);
+                $("#buyDomainButton").prop("disabled", false);
             } else {
                 isDomainAvailable = false;
-                document.getElementById("status").textContent = "Домен недоступен.";
-                document.getElementById("price").textContent = "";
-                document.getElementById("buyDomainButton").disabled = true;
+                $("#status").text("Домен недоступен.");
+                $("#price").text("");
+                $("#buyDomainButton").prop("disabled", true);
             }
         } catch (error) {
             console.error("Ошибка при проверке домена:", error);
-            document.getElementById("status").textContent = "Ошибка при проверке домена.";
+            $("#status").text("Ошибка при проверке домена.");
         }
     }
 
@@ -124,28 +124,20 @@
             return;
         }
 
-        document.getElementById("status").textContent = "Покупка домена...";
-        document.getElementById("buyDomainButton").disabled = true;
+        $("#status").text("Покупка домена...");
+        $("#buyDomainButton").prop("disabled", true);
 
         try {
-            const response = await fetch(`${API_URL}/buy-domain`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ domain: currentDomain }),
-            });
-            const data = await response.json();
-
-            if (data.success) {
-                document.getElementById("status").textContent = "Домен успешно куплен!";
-                document.getElementById("price").textContent = "";
+            const response = await $.post(`${API_URL}/buy-domain`, { domain: currentDomain });
+            if (response.success) {
+                $("#status").text("Домен успешно куплен!");
+                $("#price").text("");
             } else {
-                document.getElementById("status").textContent = "Ошибка при покупке домена.";
+                $("#status").text("Ошибка при покупке домена.");
             }
         } catch (error) {
             console.error("Ошибка при покупке домена:", error);
-            document.getElementById("status").textContent = "Ошибка при покупке домена.";
+            $("#status").text("Ошибка при покупке домена.");
         }
     }
 
@@ -155,8 +147,29 @@
     document.body.style.visibility = '';
 
     // Назначение обработчиков событий
-    document.getElementById("checkDomainButton").addEventListener("click", checkDomain);
-    document.getElementById("buyDomainButton").addEventListener("click", buyDomain);
+    $("#checkDomainButton").on("click", checkDomain);
+    $("#buyDomainButton").on("click", buyDomain);
+
+    $("#authButton").on("click", async function () {
+    const user = Telegram.WebApp.initDataUnsafe.user;
+    if (!user) {
+        alert("Ошибка входа через Telegram");
+        return;
+    }
+
+    try {
+        // const response = await $.post(`${API_URL}/auth`, { user_id: user.id, first_name: user.first_name });
+        // if (response.success) {
+            $("#authButton").hide();
+            alert(`Добро пожаловать, ${user.first_name}!`);
+        // } else {
+        //     alert("Ошибка авторизации.");
+        // }
+    } catch (error) {
+        console.error("Ошибка авторизации:", error);
+    }
+    });
+
 </script>
 
 </body>
