@@ -9,7 +9,7 @@
     <meta name="HandheldFriendly" content="True" />
     <meta name="robots" content="noindex,nofollow" />
     <script src="https://telegram.org/js/telegram-web-app.js?2"></script>
-    <title>Шуточная Рулетка</title>
+    <title>Покупка доменов</title>
     <style>
         body {
             --bg-color: var(--tg-theme-bg-color, #fff);
@@ -27,12 +27,23 @@
             text-align: center;
         }
 
+        input[type="text"] {
+            display: block;
+            width: 100%;
+            font-size: 16px;
+            padding: 10px;
+            margin: 15px 0;
+            border: 1px solid var(--tg-theme-link-color, #000);
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
         button {
             display: block;
             width: 100%;
-            font-size: 18px;
-            margin: 15px 0;
+            font-size: 16px;
             padding: 12px 20px;
+            margin: 10px 0;
             border: none;
             border-radius: 4px;
             background-color: var(--tg-theme-button-color, #50a8eb);
@@ -40,10 +51,16 @@
             cursor: pointer;
         }
 
-        .result {
+        .status {
             margin-top: 20px;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
+        }
+
+        .price {
+            margin-top: 10px;
+            font-size: 16px;
+            color: var(--tg-theme-hint-color, #a8a8a8);
         }
     </style>
 </head>
@@ -51,55 +68,95 @@
 <body class="" style="visibility: hidden;">
 
 <div class="main-container">
-    <button id="rouletteButton">Крутить Рулетку!</button>
-    <div id="result" class="result"></div>
+    <input type="text" id="domainInput" placeholder="Введите доменное имя (например, example.com)" />
+    <button id="checkDomainButton">Проверить доступность</button>
+    <button id="buyDomainButton" disabled>Купить домен</button>
+    <div id="status" class="status"></div>
+    <div id="price" class="price"></div>
 </div>
 
 <script type="application/javascript">
-    const jokes = [
-        "Тебе сегодня повезёт!",
-        "Попробуй ещё раз, может быть, повезёт!",
-        "Сегодня твой день!",
-        "Удача на твоей стороне!",
-        "Попробуй завтра...",
-        "Сегодня не твой день, но не расстраивайся!",
-        "Ты сегодня просто везунчик!",
-        "Попробуй ещё раз, удача рядом!",
-        "Сегодня ты можешь всё!",
-        "Не сдавайся, удача уже близко!"
-    ];
+    const API_URL = "https://your-backend-api.com"; // Замените на ваш API
 
-    const actions = [
-        "Сделай 10 отжиманий!",
-        "Скажи комплимент ближайшему человеку!",
-        "Съешь что-нибудь вкусное!",
-        "Сделай доброе дело!",
-        "Посмотри смешное видео!",
-        "Сделай зарядку!",
-        "Позвони другу!",
-        "Сделай что-то, что давно откладывал!"
-    ];
+    let currentDomain = "";
+    let isDomainAvailable = false;
+    let domainPrice = 0;
 
-    function getRandomElement(array) {
-        return array[Math.floor(Math.random() * array.length)];
-    }
+    // Функция для проверки доступности домена
+    async function checkDomain() {
+        const domain = document.getElementById("domainInput").value.trim();
+        if (!domain) {
+            alert("Пожалуйста, введите доменное имя.");
+            return;
+        }
 
-    function spinRoulette() {
-        const resultElement = document.getElementById('result');
-        const randomChoice = Math.random();
+        currentDomain = domain;
+        document.getElementById("status").textContent = "Проверка доступности...";
+        document.getElementById("price").textContent = "";
+        document.getElementById("buyDomainButton").disabled = true;
 
-        if (randomChoice < 0.5) {
-            resultElement.textContent = getRandomElement(jokes);
-        } else {
-            resultElement.textContent = getRandomElement(actions);
+        try {
+            const response = await fetch(`${API_URL}/check-domain?domain=${domain}`);
+            const data = await response.json();
+
+            if (data.available) {
+                isDomainAvailable = true;
+                domainPrice = data.price;
+                document.getElementById("status").textContent = "Домен доступен!";
+                document.getElementById("price").textContent = `Цена: $${domainPrice}`;
+                document.getElementById("buyDomainButton").disabled = false;
+            } else {
+                isDomainAvailable = false;
+                document.getElementById("status").textContent = "Домен недоступен.";
+                document.getElementById("price").textContent = "";
+                document.getElementById("buyDomainButton").disabled = true;
+            }
+        } catch (error) {
+            console.error("Ошибка при проверке домена:", error);
+            document.getElementById("status").textContent = "Ошибка при проверке домена.";
         }
     }
 
-    document.getElementById('rouletteButton').addEventListener('click', spinRoulette);
+    // Функция для покупки домена
+    async function buyDomain() {
+        if (!isDomainAvailable || !currentDomain) {
+            alert("Домен недоступен для покупки.");
+            return;
+        }
 
+        document.getElementById("status").textContent = "Покупка домена...";
+        document.getElementById("buyDomainButton").disabled = true;
+
+        try {
+            const response = await fetch(`${API_URL}/buy-domain`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ domain: currentDomain }),
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                document.getElementById("status").textContent = "Домен успешно куплен!";
+                document.getElementById("price").textContent = "";
+            } else {
+                document.getElementById("status").textContent = "Ошибка при покупке домена.";
+            }
+        } catch (error) {
+            console.error("Ошибка при покупке домена:", error);
+            document.getElementById("status").textContent = "Ошибка при покупке домена.";
+        }
+    }
+
+    // Инициализация приложения
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
     document.body.style.visibility = '';
+
+    // Назначение обработчиков событий
+    document.getElementById("checkDomainButton").addEventListener("click", checkDomain);
+    document.getElementById("buyDomainButton").addEventListener("click", buyDomain);
 </script>
 
 </body>
