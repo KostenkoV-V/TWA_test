@@ -67,7 +67,10 @@
 </head>
 
 <body class="" style="visibility: hidden;">
-    <button id="authButton">Войти через Telegram</button>
+    <div id="info">
+        <button id="authButton">Войти через Telegram</button>
+    </div>
+    
 
 <div class="main-container">
     <input type="text" id="domainInput" placeholder="Введите доменное имя (например, example.com)" />
@@ -161,7 +164,9 @@
         // const response = await $.post(`${API_URL}/auth`, { user_id: user.id, first_name: user.first_name });
         // if (response.success) {
             $("#authButton").hide();
-            alert(`Добро пожаловать, ${user}!`);
+            alert(`Добро пожаловать, ${user.username} - ${user.first_name} - ${user.id}!`);
+            $("#info").append(`${user.username} - ${user.first_name} - ${user.id}!`)
+
         // } else {
         //     alert("Ошибка авторизации.");
         // }
