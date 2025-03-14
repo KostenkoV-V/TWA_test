@@ -1,180 +1,226 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="format-detection" content="telephone=no" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="MobileOptimized" content="176" />
-    <meta name="HandheldFriendly" content="True" />
-    <meta name="robots" content="noindex,nofollow" />
-    <script src="https://telegram.org/js/telegram-web-app.js?2"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <title>Покупка доменов</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проверка доменов</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
-            --bg-color: var(--tg-theme-bg-color, #fff);
-            font-family: sans-serif;
-            background-color: var(--bg-color);
-            color: var(--tg-theme-text-color, #222);
-            font-size: 14px;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            color-scheme: var(--tg-color-scheme);
+            background-color: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #000);
         }
 
-        .main-container {
-            padding: 15px;
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
             text-align: center;
+            color: var(--tg-theme-text-color, #000);
         }
 
-        input[type="text"] {
-            display: block;
+        input[type="text"], input[type="password"], button {
             width: 100%;
-            font-size: 16px;
             padding: 10px;
-            margin: 15px 0;
-            border: 1px solid var(--tg-theme-link-color, #000);
+            margin: 10px 0;
+            border: 1px solid var(--tg-theme-hint-color, #ccc);
             border-radius: 4px;
-            box-sizing: border-box;
+            font-size: 16px;
+            background-color: var(--tg-theme-secondary-bg-color, #f4f4f4);
+            color: var(--tg-theme-text-color, #000);
         }
 
         button {
-            display: block;
-            width: 100%;
-            font-size: 16px;
-            padding: 12px 20px;
-            margin: 10px 0;
+            background-color: var(--tg-theme-button-color, #4CAF50);
+            color: var(--tg-theme-button-text-color, #fff);
             border: none;
-            border-radius: 4px;
-            background-color: var(--tg-theme-button-color, #50a8eb);
-            color: var(--tg-theme-button-text-color, #ffffff);
             cursor: pointer;
         }
 
-        .status {
-            margin-top: 20px;
-            font-size: 18px;
-            font-weight: bold;
+        button:hover {
+            background-color: var(--tg-theme-button-color, #45a049);
         }
 
-        .price {
-            margin-top: 10px;
+        .result {
+            margin-top: 20px;
+        }
+
+        .result p {
             font-size: 16px;
-            color: var(--tg-theme-hint-color, #a8a8a8);
+            color: var(--tg-theme-text-color, #000);
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
         }
     </style>
 </head>
+<body>
 
-<body class="" style="visibility: hidden;">
-    <div id="info">
-        <button id="authButton">Войти через Telegram</button>
+<div class="container">
+    <!-- Страница авторизации -->
+    <div id="authPage" class="page active">
+        <h1>Авторизация</h1>
+        <form id="loginForm">
+            <input type="text" id="login" placeholder="Логин" required>
+            <input type="password" id="password" placeholder="Пароль" required>
+            <button type="submit">Войти</button>
+        </form>
+        <button id="registerBtn">Регистрация</button>
     </div>
-    
 
-<div class="main-container">
-    <input type="text" id="domainInput" placeholder="Введите доменное имя (например, example.com)" />
-    <button id="checkDomainButton">Проверить доступность</button>
-    <button id="buyDomainButton" disabled>Купить домен</button>
-    <div id="status" class="status"></div>
-    <div id="price" class="price"></div>
+    <!-- Страница регистрации -->
+    <div id="registerPage" class="page">
+        <h1>Регистрация</h1>
+        <form id="registerForm">
+            <input type="text" id="regLogin" placeholder="Логин" required>
+            <input type="password" id="regPassword" placeholder="Пароль" required>
+            <button type="submit">Зарегистрироваться</button>
+        </form>
+        <button id="backToLoginBtn">Назад к авторизации</button>
+    </div>
+
+    <!-- Страница поиска доменов -->
+    <div id="searchPage" class="page">
+        <h1>Проверка доменов</h1>
+        <form id="domainForm">
+            <input type="text" id="domainName" placeholder="Введите домен без расширения" required>
+            <button type="submit">Проверить</button>
+        </form>
+        <div class="result" id="result"></div>
+    </div>
+
+    <!-- Страница управления доменом -->
+    <div id="managePage" class="page">
+        <h1>Управление доменом</h1>
+        <div id="domainInfo"></div>
+        <button id="backToSearchBtn">Назад к поиску</button>
+    </div>
 </div>
 
-<script type="application/javascript">
-    const API_URL = "https://your-backend-api.com"; // Замените на ваш API
-
-    let currentDomain = "";
-    let isDomainAvailable = false;
-    let domainPrice = 0;
-
-    // Функция для проверки доступности домена
-    async function checkDomain() {
-        const domain = $("#domainInput").val().trim();
-        if (!domain) {
-            alert("Пожалуйста, введите доменное имя.");
-            return;
-        }
-
-        currentDomain = domain;
-        $("#status").text("Проверка доступности...");
-        $("#price").text("");
-        $("#buyDomainButton").prop("disabled", true);
-
-        try {
-            const response = await $.get(`${API_URL}/check-domain`, { domain });
-            if (response.available) {
-                isDomainAvailable = true;
-                domainPrice = response.price;
-                $("#status").text("Домен доступен!");
-                $("#price").text(`Цена: $${domainPrice}`);
-                $("#buyDomainButton").prop("disabled", false);
-            } else {
-                isDomainAvailable = false;
-                $("#status").text("Домен недоступен.");
-                $("#price").text("");
-                $("#buyDomainButton").prop("disabled", true);
-            }
-        } catch (error) {
-            console.error("Ошибка при проверке домена:", error);
-            $("#status").text("Ошибка при проверке домена.");
-        }
-    }
-
-    // Функция для покупки домена
-    async function buyDomain() {
-        if (!isDomainAvailable || !currentDomain) {
-            alert("Домен недоступен для покупки.");
-            return;
-        }
-
-        $("#status").text("Покупка домена...");
-        $("#buyDomainButton").prop("disabled", true);
-
-        try {
-            const response = await $.post(`${API_URL}/buy-domain`, { domain: currentDomain });
-            if (response.success) {
-                $("#status").text("Домен успешно куплен!");
-                $("#price").text("");
-            } else {
-                $("#status").text("Ошибка при покупке домена.");
-            }
-        } catch (error) {
-            console.error("Ошибка при покупке домена:", error);
-            $("#status").text("Ошибка при покупке домена.");
-        }
-    }
-
-    // Инициализация приложения
+<script>
+    // Инициализация Telegram Web App
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
-    document.body.style.visibility = '';
 
-    // Назначение обработчиков событий
-    $("#checkDomainButton").on("click", checkDomain);
-    $("#buyDomainButton").on("click", buyDomain);
+    // Текущий пользователь (для демонстрации)
+    let currentUser = null;
 
-    $("#authButton").on("click", async function () {
-    const user = Telegram.WebApp.initDataUnsafe.user;
-    if (!user) {
-        alert("Ошибка входа через Telegram");
-        return;
+    // Навигация между страницами
+    function showPage(pageId) {
+        $(".page").removeClass("active");
+        $(`#${pageId}`).addClass("active");
     }
 
-    try {
-        // const response = await $.post(`${API_URL}/auth`, { user_id: user.id, first_name: user.first_name });
-        // if (response.success) {
-            $("#authButton").hide();
-            alert(`Добро пожаловать, ${user.username} - ${user.first_name} - ${user.id}!`);
-            $("#info").append(`${user.username} - ${user.first_name} - ${user.id}!`)
-
-        // } else {
-        //     alert("Ошибка авторизации.");
-        // }
-    } catch (error) {
-        console.error("Ошибка авторизации:", error);
+    // Авторизация через Telegram
+    function authViaTelegram() {
+        const initData = Telegram.WebApp.initData;
+        if (initData) {
+            const user = JSON.parse(initData).user;
+            if (user) {
+                currentUser = user;
+                showPage("searchPage");
+            }
+        }
     }
+
+    // Обработка формы авторизации
+    $("#loginForm").on("submit", function (e) {
+        e.preventDefault();
+        const login = $("#login").val();
+        const password = $("#password").val();
+
+        // Здесь можно добавить запрос к API для проверки логина и пароля
+        if (login && password) {
+            currentUser = { username: login };
+            showPage("searchPage");
+        } else {
+            alert("Неверный логин или пароль.");
+        }
     });
 
+    // Обработка формы регистрации
+    $("#registerForm").on("submit", function (e) {
+        e.preventDefault();
+        const login = $("#regLogin").val();
+        const password = $("#regPassword").val();
+
+        // Здесь можно добавить запрос к API для регистрации
+        if (login && password) {
+            currentUser = { username: login };
+            showPage("searchPage");
+        } else {
+            alert("Заполните все поля.");
+        }
+    });
+
+    // Переход на страницу регистрации
+    $("#registerBtn").on("click", function () {
+        showPage("registerPage");
+    });
+
+    // Возврат на страницу авторизации
+    $("#backToLoginBtn").on("click", function () {
+        showPage("authPage");
+    });
+
+    // Возврат на страницу поиска
+    $("#backToSearchBtn").on("click", function () {
+        showPage("searchPage");
+    });
+
+    // Проверка домена
+    $("#domainForm").on("submit", function (e) {
+        e.preventDefault();
+        const name = $("#domainName").val().trim();
+        if (!name) return;
+
+        fetch(`/check?name=${name}`)
+            .then(response => response.json())
+            .then(data => {
+                let resultHTML = '';
+                for (let domain in data) {
+                    resultHTML += `<p><strong>${domain}:</strong> ${data[domain].slice(0, 4)}</p>`;
+                    if (data[domain][4] === true) {
+                        resultHTML += `<button id='${domain}' class='buyBtn'>Купить</button>`;
+                    }
+                }
+                $("#result").html(resultHTML);
+
+                // Обработка кнопки "Купить"
+                $(".buyBtn").on("click", function () {
+                    const domain = $(this).attr("id");
+                    fetch(`/buy/${domain}`, { method: "POST" })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert(`Домен ${domain} успешно куплен!`);
+                                showPage("managePage");
+                                $("#domainInfo").html(`<p>Домен: ${domain}</p>`);
+                            } else {
+                                alert("Ошибка при покупке домена.");
+                            }
+                        });
+                });
+            })
+            .catch(error => {
+                $("#result").html("<p>Ошибка при проверке доменов. Попробуйте позже.</p>");
+            });
+    });
+
+    // Авторизация через Telegram при загрузке
+    authViaTelegram();
 </script>
 
 </body>
