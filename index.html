@@ -64,7 +64,22 @@
 </head>
 <body>
 <div class="container">
-    <div id="searchPage" class="page active">
+    <div id="authPage" class="page active">
+        <h1>Авторизация</h1>
+        <button id="loginVk">Войти через ВК</button>
+        <button id="loginGoogle">Войти через Google</button>
+        <button id="gotoRegister">Регистрация</button>
+    </div>
+
+    <div id="registerPage" class="page">
+        <h1>Регистрация</h1>
+        <input type="text" id="regLogin" placeholder="Логин" required>
+        <input type="password" id="regPassword" placeholder="Пароль" required>
+        <button id="registerBtn">Зарегистрироваться</button>
+        <button id="backToLogin">Назад</button>
+    </div>
+
+    <div id="searchPage" class="page">
         <h1>Проверка доменов</h1>
         <form id="domainForm">
             <input type="text" id="domainName" placeholder="Введите домен без расширения" required>
@@ -72,32 +87,56 @@
         </form>
         <div class="result" id="result"></div>
     </div>
+
+    <div id="managePage" class="page">
+        <h1>Управление доменом</h1>
+        <div id="domainInfo"></div>
+        <button id="backToSearch">Назад</button>
+    </div>
 </div>
 <script>
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
 
-    $(document).ready(function() {
-        $("#domainForm").on("submit", function(e) {
-            e.preventDefault();
-            const name = $("#domainName").val().trim();
-            if (!name) return;
+    function showPage(pageId) {
+        $(".page").removeClass("active");
+        $("#" + pageId).addClass("active");
+    }
 
-            // Временные данные вместо API
-            const fakeData = {
-                "example.com": ["$10", "2025-01-01", "CloudStore", "Available", true],
-                "test.org": ["$12", "2026-05-01", "AnotherStore", "Unavailable", false]
-            };
+    $("#loginVk, #loginGoogle").on("click", function() {
+        alert("Эмуляция входа через " + $(this).text());
+        showPage("searchPage");
+    });
 
-            let resultHTML = '';
-            for (let domain in fakeData) {
-                resultHTML += `<p><strong>${domain}:</strong> ${fakeData[domain][3]}</p>`;
-                if (fakeData[domain][4]) {
-                    resultHTML += `<button class='buyBtn' data-domain='${domain}'>Купить</button>`;
-                }
+    $("#gotoRegister").on("click", function() { showPage("registerPage"); });
+    $("#backToLogin").on("click", function() { showPage("authPage"); });
+    $("#backToSearch").on("click", function() { showPage("searchPage"); });
+
+    $("#domainForm").on("submit", function(e) {
+        e.preventDefault();
+        const name = $("#domainName").val().trim();
+        if (!name) return;
+
+        const fakeData = {
+            "example.com": ["$10", "2025-01-01", "CloudStore", "Available", true],
+            "test.org": ["$12", "2026-05-01", "AnotherStore", "Unavailable", false]
+        };
+
+        let resultHTML = '';
+        for (let domain in fakeData) {
+            resultHTML += `<p><strong>${domain}:</strong> ${fakeData[domain][3]}</p>`;
+            if (fakeData[domain][4]) {
+                resultHTML += `<button class='buyBtn' data-domain='${domain}'>Купить</button>`;
             }
-            $("#result").html(resultHTML);
-        });
+        }
+        $("#result").html(resultHTML);
+    });
+
+    $(document).on("click", ".buyBtn", function() {
+        const domain = $(this).data("domain");
+        alert(`Домен ${domain} успешно куплен!`);
+        $("#domainInfo").html(`<p>Вы купили: ${domain}</p>`);
+        showPage("managePage");
     });
 </script>
 </body>
