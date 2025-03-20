@@ -31,7 +31,7 @@
             text-align: center;
             font-size: 20px;
         }
-        input, button {
+        button {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
@@ -39,10 +39,52 @@
             border: none;
             font-size: 16px;
         }
-        input {
-            background-color: var(--tg-theme-secondary-bg-color);
-            color: var(--tg-theme-text-color);
+        input[type="text"],
+        .input[contenteditable] {
+            display: block;
+            box-sizing: border-box;
+            font-size: 14px;
+            width: 100%;
+            padding: 12px 20px;
+            margin: 15px 0;
+            border: 1px solid var(--tg-theme-link-color, #000);
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            border-radius: 4px;
+            color: var(--tg-theme-text-color, #222222);
+            text-align: start;
         }
+
+        input[type="text"]::-webkit-input-placeholder {
+            color: var(--tg-theme-hint-color, #ccc);
+        }
+
+        input[type="text"]::-moz-placeholder {
+            color: var(--tg-theme-hint-color, #ccc);
+        }
+
+        input[type="text"]:-ms-input-placeholder {
+            color: var(--tg-theme-hint-color, #ccc);
+        }
+
+        .input[data-placeholder] {
+            position: relative;
+        }
+
+        .input[data-placeholder]:empty:before {
+            position: absolute;
+            left: 0;
+            right: 0;
+            content: attr(data-placeholder);
+            color: var(--tg-theme-hint-color, #ccc);
+            padding: 0 20px;
+            font-weight: normal;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: -1;
+        }
+
         button {
             background-color: var(--tg-theme-button-color);
             color: var(--tg-theme-button-text-color);
@@ -66,21 +108,23 @@
 <div class="container">
     <div id="authPage" class="page active">
         <h1>Авторизация</h1>
-        <button id="loginVk">Войти через ВК</button>
-        <button id="loginGoogle">Войти через Google</button>
-        <button id="gotoRegister">Регистрация</button>
+        <button id="loginVk">Войти через Телеграмм</button>
+        <!-- <button id="gotoRegister">Регистрация</button> -->
     </div>
 
-    <div id="registerPage" class="page">
+    <!-- <div id="registerPage" class="page">
         <h1>Регистрация</h1>
         <input type="text" id="regLogin" placeholder="Логин" required>
         <input type="password" id="regPassword" placeholder="Пароль" required>
         <button id="registerBtn">Зарегистрироваться</button>
         <button id="backToLogin">Назад</button>
-    </div>
+    </div> -->
 
     <div id="searchPage" class="page">
-        <h1>Проверка доменов</h1>
+        <div id="account">
+            
+        </div>
+        <h1>Покупка доменов</h1>
         <form id="domainForm">
             <input type="text" id="domainName" placeholder="Введите домен без расширения" required>
             <button type="submit">Проверить</button>
@@ -103,8 +147,10 @@
         $("#" + pageId).addClass("active");
     }
 
-    $("#loginVk, #loginGoogle").on("click", function() {
-        alert("Эмуляция входа через " + $(this).text());
+    $("#loginVk").on("click", function() {
+        const user = Telegram.WebApp.initDataUnsafe.user;
+        $("account").html(`<img src="${user.photo_url}" width="50" height="50">
+            <h3 id="name">${user.first_name}</h3>`)
         showPage("searchPage");
     });
 
