@@ -149,7 +149,7 @@
 
     $("#loginVk").on("click", function() {
         const user = Telegram.WebApp.initDataUnsafe.user;
-        $("account").html(`<img src="${user.photo_url}" width="50" height="50">
+        $("#account").html(`<img src="${user.photo_url}" width="50" height="50">
             <h3 id="name">${user.first_name}</h3>`)
         showPage("searchPage");
     });
