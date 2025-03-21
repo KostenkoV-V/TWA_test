@@ -38,6 +38,7 @@
             border-radius: 6px;
             border: none;
             font-size: 16px;
+            cursor: pointer;
         }
         input[type="text"],
         .input[contenteditable] {
@@ -53,42 +54,9 @@
             color: var(--tg-theme-text-color, #222222);
             text-align: start;
         }
-
-        input[type="text"]::-webkit-input-placeholder {
-            color: var(--tg-theme-hint-color, #ccc);
-        }
-
-        input[type="text"]::-moz-placeholder {
-            color: var(--tg-theme-hint-color, #ccc);
-        }
-
-        input[type="text"]:-ms-input-placeholder {
-            color: var(--tg-theme-hint-color, #ccc);
-        }
-
-        .input[data-placeholder] {
-            position: relative;
-        }
-
-        .input[data-placeholder]:empty:before {
-            position: absolute;
-            left: 0;
-            right: 0;
-            content: attr(data-placeholder);
-            color: var(--tg-theme-hint-color, #ccc);
-            padding: 0 20px;
-            font-weight: normal;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            pointer-events: none;
-            z-index: -1;
-        }
-
         button {
             background-color: var(--tg-theme-button-color);
             color: var(--tg-theme-button-text-color);
-            cursor: pointer;
         }
         button:hover {
             opacity: 0.9;
@@ -102,34 +70,37 @@
         .page.active {
             display: block;
         }
+        .bottom-buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+        .bottom-buttons button {
+            width: 48%;
+        }
     </style>
 </head>
 <body>
 <div class="container">
-    <div id="authPage" class="page active">
-        <h1>Авторизация</h1>
-        <button id="loginVk">Войти через Телеграмм</button>
-        <!-- <button id="gotoRegister">Регистрация</button> -->
+    <div id="accountPage" class="page active">
+        <h1>Аккаунт пользователя</h1>
+        <div id="accountInfo"></div>
+        <div class="bottom-buttons">
+            <button id="gotoSearch">Поиск доменов</button>
+            <button id="gotoAccount">Аккаунт</button>
+        </div>
     </div>
 
-    <!-- <div id="registerPage" class="page">
-        <h1>Регистрация</h1>
-        <input type="text" id="regLogin" placeholder="Логин" required>
-        <input type="password" id="regPassword" placeholder="Пароль" required>
-        <button id="registerBtn">Зарегистрироваться</button>
-        <button id="backToLogin">Назад</button>
-    </div> -->
-
     <div id="searchPage" class="page">
-        <div id="account">
-            
-        </div>
-        <h1>Покупка доменов</h1>
+        <h1>Поиск доменов</h1>
         <form id="domainForm">
             <input type="text" id="domainName" placeholder="Введите домен без расширения" required>
             <button type="submit">Проверить</button>
         </form>
         <div class="result" id="result"></div>
+        <div class="bottom-buttons">
+            <button id="gotoAccountSearch">Аккаунт</button>
+            <button id="gotoManage">Управление доменом</button>
+        </div>
     </div>
 
     <div id="managePage" class="page">
@@ -138,6 +109,7 @@
         <button id="backToSearch">Назад</button>
     </div>
 </div>
+
 <script>
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
@@ -147,16 +119,25 @@
         $("#" + pageId).addClass("active");
     }
 
-    $("#loginVk").on("click", function() {
-        const user = Telegram.WebApp.initDataUnsafe.user;
-        $("#account").html(`<img src="${user.photo_url}" width="50" height="50">
-            <h3 id="name">${user.first_name}</h3>`)
+    $("#gotoAccount").on("click", function() {
+        showPage("accountPage");
+    });
+
+    $("#gotoSearch").on("click", function() {
         showPage("searchPage");
     });
 
-    $("#gotoRegister").on("click", function() { showPage("registerPage"); });
-    $("#backToLogin").on("click", function() { showPage("authPage"); });
-    $("#backToSearch").on("click", function() { showPage("searchPage"); });
+    $("#gotoAccountSearch").on("click", function() {
+        showPage("accountPage");
+    });
+
+    $("#gotoManage").on("click", function() {
+        showPage("managePage");
+    });
+
+    $("#backToSearch").on("click", function() {
+        showPage("searchPage");
+    });
 
     $("#domainForm").on("submit", function(e) {
         e.preventDefault();
@@ -184,6 +165,14 @@
         $("#domainInfo").html(`<p>Вы купили: ${domain}</p>`);
         showPage("managePage");
     });
+
+
+    const user = Telegram.WebApp.initDataUnsafe.user;
+    $("#accountInfo").html(`
+        <img src="${user.photo_url}" width="50" height="50">
+        <h3>${user.first_name}</h3>
+    `);
 </script>
 </body>
 </html>
+
