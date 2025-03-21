@@ -31,15 +31,6 @@
             text-align: center;
             font-size: 20px;
         }
-        button {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 6px;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-        }
         input[type="text"],
         .input[contenteditable] {
             display: block;
@@ -53,6 +44,15 @@
             border-radius: 4px;
             color: var(--tg-theme-text-color, #222222);
             text-align: start;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
         }
         button {
             background-color: var(--tg-theme-button-color);
@@ -71,11 +71,26 @@
             display: block;
         }
         .bottom-buttons {
+            position: fixed;
+            bottom: 10px;
+            left: 0;
+            width: 100%;
             display: flex;
             justify-content: space-between;
+            padding: 10px;
+            background: var(--tg-theme-bg-color);
         }
         .bottom-buttons button {
             width: 48%;
+        }
+        .account-info {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .account-info img {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
         }
     </style>
 </head>
@@ -83,13 +98,11 @@
 <div class="container">
     <div id="accountPage" class="page active">
         <h1>Аккаунт пользователя</h1>
-        <div id="accountInfo"></div>
-        <div class="bottom-buttons">
-            <button id="gotoSearch">Поиск доменов</button>
-            <button id="gotoAccount">Аккаунт</button>
-        </div>
+        <div id="accountInfo" class="account-info"></div>
+        <h2>Мои домены</h2>
+        <div id="userDomains"></div>
     </div>
-
+    
     <div id="searchPage" class="page">
         <h1>Поиск доменов</h1>
         <form id="domainForm">
@@ -97,17 +110,18 @@
             <button type="submit">Проверить</button>
         </form>
         <div class="result" id="result"></div>
-        <div class="bottom-buttons">
-            <button id="gotoAccountSearch">Аккаунт</button>
-            <button id="gotoManage">Управление доменом</button>
-        </div>
     </div>
-
+    
     <div id="managePage" class="page">
         <h1>Управление доменом</h1>
         <div id="domainInfo"></div>
-        <button id="backToSearch">Назад</button>
+        <button id="backToAccount">Назад</button>
     </div>
+</div>
+
+<div class="bottom-buttons">
+    <button id="gotoAccount">Аккаунт</button>
+    <button id="gotoSearch">Поиск доменов</button>
 </div>
 
 <script>
@@ -127,16 +141,8 @@
         showPage("searchPage");
     });
 
-    $("#gotoAccountSearch").on("click", function() {
+    $("#backToAccount").on("click", function() {
         showPage("accountPage");
-    });
-
-    $("#gotoManage").on("click", function() {
-        showPage("managePage");
-    });
-
-    $("#backToSearch").on("click", function() {
-        showPage("searchPage");
     });
 
     $("#domainForm").on("submit", function(e) {
@@ -166,13 +172,13 @@
         showPage("managePage");
     });
 
-
     const user = Telegram.WebApp.initDataUnsafe.user;
-    $("#accountInfo").html(`
-        <img src="${user.photo_url}" width="50" height="50">
-        <h3>${user.first_name}</h3>
-    `);
+    if (user) {
+        $("#accountInfo").html(`
+            <img src="${user.photo_url}" width="50" height="50">
+            <h3>${user.first_name}</h3>
+        `);
+    }
 </script>
 </body>
 </html>
-
