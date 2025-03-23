@@ -74,7 +74,7 @@
             position: fixed;
             bottom: 10px;
             left: 0;
-            width: 100%;
+            width: 96%;
             display: flex;
             justify-content: space-between;
             padding: 10px;
@@ -91,6 +91,13 @@
             border-radius: 50%;
             width: 50px;
             height: 50px;
+        }
+        .buyBtn{
+            width: 30%;
+        }
+        .domain{
+            display: flex;
+            justify-content: space-between;
         }
     </style>
 </head>
@@ -151,17 +158,28 @@
         if (!name) return;
 
         const fakeData = {
-            "example.com": ["$10", "2025-01-01", "CloudStore", "Available", true],
-            "test.org": ["$12", "2026-05-01", "AnotherStore", "Unavailable", false]
+            "example.com": ["$10", "2025-01-01", "CloudStore", "Доступен", true],
+            "exampl1e.com": ["$20", "2025-01-01", "CloudStore", "Доступен", true],
+            "exampl2e.com": ["$30", "2025-01-01", "CloudStore", "Доступен", true],
+            "exampl4e.com": ["$10", "2025-01-01", "CloudStore", "Доступен", true],
+            "test.org": ["$12", "2026-05-01", "AnotherStore", "Занят", false]
         };
+
+        const fakeDomain = {
+
+        }
 
         let resultHTML = '';
         for (let domain in fakeData) {
-            resultHTML += `<p><strong>${domain}:</strong> ${fakeData[domain][3]}</p>`;
+            resultHTML += `<div class="domain"> <p><strong>${domain}:</strong> ${fakeData[domain][3]} -  ${fakeData[domain][0]}</p> `;
             if (fakeData[domain][4]) {
-                resultHTML += `<button class='buyBtn' data-domain='${domain}'>Купить</button>`;
+                resultHTML += `<button class='buyBtn'  data-domain='${domain}'>Купить</button>`;
             }
+            resultHTML += `</div>`;
+
         }
+
+
         $("#result").html(resultHTML);
     });
 
@@ -169,7 +187,8 @@
         const domain = $(this).data("domain");
         alert(`Домен ${domain} успешно куплен!`);
         $("#domainInfo").html(`<p>Вы купили: ${domain}</p>`);
-        showPage("managePage");
+        $("#userDomains").html(`<p> ${domain} </p>  <button id="gotoAccount"> Управление </button> `);
+        showPage("accountPage");
     });
 
     const user = Telegram.WebApp.initDataUnsafe.user;
